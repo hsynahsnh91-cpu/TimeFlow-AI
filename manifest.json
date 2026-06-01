@@ -1,0 +1,21 @@
+{
+  "name": "TimeFlow AI Tracker",
+  "short_name": "TimeFlow",
+  "description": "Smart Time & Location Tracker PWA",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#4f46e5",
+  "orientation": "any",
+  "icons": [
+    { "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%234f46e5' rx='36' width='192' height='192'/><text x='96' y='128' font-size='100' text-anchor='middle' fill='white'>⏱️</text></svg>", "sizes": "192x192", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect fill='%234f46e5' rx='80' width='512' height='512'/><text x='256' y='320' font-size='280' text-anchor='middle' fill='white'>⏱️</text></svg>", "sizes": "512x512", "type": "image/svg+xml", "purpose": "maskable" }
+  ],
+  "lang": "ar",
+  "dir": "rtl",
+  "categories": ["productivity", "utilities"],
+  "shortcuts": [
+    { "name": "لوحة التحكم", "url": "/#dashboard", "description": "عرض لوحة التحكم" },
+    { "name": "مؤقت", "url": "/#timer", "description": "بدء مؤقت بومودورو" }
+  ]
+}

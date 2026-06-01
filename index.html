@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="description" content="TimeFlow AI - ذكي لإدارة الوقت والمهام والإنتاجية مع تتبع المواقع">
+  <meta name="theme-color" content="#4f46e5">
+  <title>TimeFlow AI | Smart Time & Location Tracker</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%234f46e5'><path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z'/></svg>">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/auth.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+  <div id="app-container" class="app-wrapper">
+    <!-- Loading Screen -->
+    <div id="loader" class="loader-screen">
+      <div class="loader-spinner"></div>
+      <p class="loader-text">جاري تحميل TimeFlow AI...</p>
+    </div>
+
+    <!-- Network Status Banner -->
+    <div id="network-status" class="network-banner hidden">
+      <span id="network-msg">وضع عدم الاتصال</span>
+    </div>
+
+    <!-- Auth Views -->
+    <main id="auth-views" class="view-container hidden">
+      <section id="auth-login" class="auth-card">
+        <div class="auth-logo">⏱️</div>
+        <h1>تسجيل الدخول</h1>
+        <form id="login-form" autocomplete="on">
+          <div class="input-group">
+            <label for="login-email">البريد الإلكتروني</label>
+            <input type="email" id="login-email" required placeholder="name@example.com">
+          </div>
+          <div class="input-group">
+            <label for="login-pass">كلمة المرور</label>
+            <input type="password" id="login-pass" required minlength="6">
+          </div>
+          <div class="auth-options">
+            <label><input type="checkbox" id="remember-me"> تذكرني</label>
+            <a href="#" data-action="forgot">نسيت كلمة المرور؟</a>
+          </div>
+          <button type="submit" class="btn primary full">دخول</button>
+        </form>
+        <div class="auth-footer">          <span>ليس لديك حساب؟</span>
+          <button type="button" data-view="auth-register" class="link-btn">إنشاء حساب</button>
+          <button type="button" id="guest-login" class="link-btn secondary">الدخول كضيف</button>
+        </div>
+      </section>
+
+      <section id="auth-register" class="auth-card hidden">
+        <div class="auth-logo">⏱️</div>
+        <h1>إنشاء حساب جديد</h1>
+        <form id="register-form" autocomplete="on">
+          <div class="input-group">
+            <label for="reg-name">الاسم الكامل</label>
+            <input type="text" id="reg-name" required placeholder="أحمد محمد">
+          </div>
+          <div class="input-group">
+            <label for="reg-email">البريد الإلكتروني</label>
+            <input type="email" id="reg-email" required>
+          </div>
+          <div class="input-group">
+            <label for="reg-pass">كلمة المرور</label>
+            <input type="password" id="reg-pass" required minlength="6" pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{6,}$">
+            <small>6 أحرف على الأقل، تحتوي على أرقام وأحرف</small>
+          </div>
+          <button type="submit" class="btn primary full">إنشاء الحساب</button>
+        </form>
+        <div class="auth-footer">
+          <span>لديك حساب بالفعل؟</span>
+          <button type="button" data-view="auth-login" class="link-btn">تسجيل الدخول</button>
+        </div>
+      </section>
+    </main>
+
+    <!-- Main App Layout -->
+    <main id="app-layout" class="main-layout hidden">
+      <aside id="sidebar" class="sidebar glass">
+        <div class="sidebar-header">
+          <div class="brand">⏱️ TimeFlow</div>
+        </div>
+        <nav class="nav-menu">
+          <button class="nav-item active" data-page="dashboard">📊 لوحة التحكم</button>
+          <button class="nav-item" data-page="tasks">📋 المهام</button>
+          <button class="nav-item" data-page="timer">⏲️ المؤقت الذكي</button>
+          <button class="nav-item" data-page="analytics">📈 التحليلات</button>
+          <button class="nav-item" data-page="location">📍 الموقع</button>
+          <button class="nav-item" data-page="settings">⚙️ الإعدادات</button>
+        </nav>
+        <div class="sidebar-footer">
+          <div class="user-card">
+            <div id="user-avatar" class="avatar-circle">U</div>
+            <div class="user-info">              <span id="user-name">مستخدم</span>
+              <span id="user-role">عضو</span>
+            </div>
+            <button id="logout-btn" title="تسجيل خروج">🚪</button>
+          </div>
+        </div>
+      </aside>
+
+      <main id="content-area" class="content glass">
+        <header class="top-bar">
+          <div class="page-title" id="current-page-title">لوحة التحكم</div>
+          <div class="top-actions">
+            <div class="datetime" id="live-clock">--:--:--</div>
+            <button id="theme-toggle" class="icon-btn" title="تبديل الوضع">🌙</button>
+            <button id="lang-toggle" class="icon-btn" title="تغيير اللغة">🌍</button>
+          </div>
+        </header>
+
+        <div class="view-wrapper">
+          <!-- Dashboard View -->
+          <section id="view-dashboard" class="view active">
+            <div class="stats-grid">
+              <div class="stat-card">
+                <h3>📈 الإنتاجية اليومية</h3>
+                <div class="value" id="stat-daily-prod">0%</div>
+                <div class="sub">من 24 ساعة</div>
+              </div>
+              <div class="stat-card">
+                <h3>✅ معدل الإنجاز</h3>
+                <div class="value" id="stat-completion">0%</div>
+                <div class="sub">المهام المكتملة</div>
+              </div>
+              <div class="stat-card">
+                <h3>⏱️ وقت التركيز</h3>
+                <div class="value" id="stat-focus-time">00:00</div>
+                <div class="sub">اليوم</div>
+              </div>
+              <div class="stat-card">
+                <h3>📍 المواقع المسجلة</h3>
+                <div class="value" id="stat-locations">0</div>
+                <div class="sub">نقطة تتبع</div>
+              </div>
+            </div>
+            <div class="dashboard-charts">
+              <canvas id="chart-daily" class="chart-canvas"></canvas>
+            </div>
+            <div class="recent-activity">
+              <h3>النشاط الأخير</h3>
+              <ul id="activity-list" class="activity-log"></ul>
+            </div>          </section>
+
+          <!-- Tasks View -->
+          <section id="view-tasks" class="view">
+            <div class="tasks-header">
+              <h2>إدارة المهام</h2>
+              <div class="controls">
+                <input type="text" id="task-search" placeholder="بحث...">
+                <select id="task-filter">
+                  <option value="all">الكل</option>
+                  <option value="active">نشطة</option>
+                  <option value="completed">مكتملة</option>
+                  <option value="archived">مؤرشفة</option>
+                </select>
+                <select id="task-sort">
+                  <option value="deadline">الأقرب للموعد</option>
+                  <option value="priority">الأولوية</option>
+                  <option value="created">الأحدث</option>
+                </select>
+                <button id="add-task-btn" class="btn primary">➕ مهمة جديدة</button>
+              </div>
+            </div>
+            <div id="tasks-list" class="tasks-list"></div>
+          </section>
+
+          <!-- Timer View -->
+          <section id="view-timer" class="view">
+            <div class="timer-container glass-card">
+              <h2 id="timer-task-title">اختر مهمة أو استخدم عام</h2>
+              <div id="timer-display" class="timer-display">00:00:00</div>
+              <div class="timer-controls">
+                <button id="timer-start" class="btn primary">▶️</button>
+                <button id="timer-pause" class="btn warning hidden">⏸️</button>
+                <button id="timer-reset" class="btn secondary">🔄</button>
+                <button id="timer-pomodoro" class="btn accent">🍅 بومودورو (25)</button>
+              </div>
+              <div class="timer-meta">
+                <label><input type="checkbox" id="timer-alerts"> تنبيهات صوتية</label>
+                <label><input type="checkbox" id="timer-auto-complete"> إكمال تلقائي</label>
+              </div>
+            </div>
+            <div class="sessions-log">
+              <h3>سجل الجلسات</h3>
+              <ul id="sessions-list"></ul>
+            </div>
+          </section>
+
+          <!-- Analytics View -->
+          <section id="view-analytics" class="view">
+            <div class="charts-grid">              <div class="chart-box"><h3>توزيع المهام</h3><canvas id="chart-distribution"></canvas></div>
+              <div class="chart-box"><h3>الإنتاجية الأسبوعية</h3><canvas id="chart-weekly"></canvas></div>
+              <div class="chart-box"><h3>اتجاهات الأداء</h3><canvas id="chart-performance"></canvas></div>
+              <div class="chart-box"><h3>التركيز مقابل المهام</h3><canvas id="chart-focus"></canvas></div>
+            </div>
+          </section>
+
+          <!-- Location View -->
+          <section id="view-location" class="view">
+            <div class="location-controls glass-card">
+              <div class="loc-info">
+                <h3>📍 الموقع الحالي</h3>
+                <p id="loc-coords">جاري التحميل...</p>
+                <p id="loc-address">---</p>
+                <p id="loc-timestamp">---</p>
+              </div>
+              <div class="loc-actions">
+                <button id="loc-start-track" class="btn primary">▶️ بدء التتبع المباشر</button>
+                <button id="loc-save-point" class="btn secondary">💾 حفظ موقع مرتبط بمهمة</button>
+                <select id="loc-task-select"><option value="">اختر مهمة</option></select>
+              </div>
+            </div>
+            <div id="map-container" class="map-box"></div>
+            <div class="history-timeline">
+              <h3>سجل الحركة</h3>
+              <ul id="location-history"></ul>
+            </div>
+          </section>
+
+          <!-- Settings View -->
+          <section id="view-settings" class="view">
+            <div class="settings-grid">
+              <div class="setting-card">
+                <h3>الملف الشخصي</h3>
+                <form id="profile-form">
+                  <input type="text" id="set-name" placeholder="الاسم">
+                  <input type="file" id="set-avatar" accept="image/*">
+                  <button type="submit" class="btn primary">حفظ</button>
+                </form>
+              </div>
+              <div class="setting-card">
+                <h3>تفضيلات التطبيق</h3>
+                <label><input type="checkbox" id="set-notifications" checked> التنبيهات</label>
+                <label><input type="checkbox" id="set-sound" checked> الأصوات</label>
+                <label>مدة البومودورو (دقائق) <input type="number" id="set-pomodoro" value="25" min="1" max="120"></label>
+                <button id="clear-data" class="btn danger">🗑️ مسح جميع البيانات</button>
+              </div>
+            </div>
+          </section>
+        </div>      </main>
+    </main>
+  </div>
+
+  <!-- Global Modals -->
+  <div id="modal-overlay" class="modal-overlay hidden">
+    <div id="modal-box" class="modal-content glass-card">
+      <button id="modal-close" class="modal-close">×</button>
+      <div id="modal-body"></div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Offline Page Fallback (handled by SW) -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
+  <script src="js/database.js" defer></script>
+  <script src="js/settings.js" defer></script>
+  <script src="js/auth.js" defer></script>
+  <script src="js/notifications.js" defer></script>
+  <script src="js/tasks.js" defer></script>
+  <script src="js/timer.js" defer></script>
+  <script src="js/location.js" defer></script>
+  <script src="js/charts.js" defer></script>
+  <script src="js/analytics.js" defer></script>
+  <script src="js/ui.js" defer></script>
+  <script src="js/pwa.js" defer></script>
+  <script src="js/app.js" defer></script>
+</body>
+</html>

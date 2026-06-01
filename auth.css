@@ -1,0 +1,12 @@
+.auth-card { max-width: 420px; margin: auto; padding: 32px; border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
+.auth-logo { font-size: 3rem; text-align: center; margin-bottom: 16px; }
+.auth-card h1 { text-align: center; margin-bottom: 24px; font-size: 1.5rem; }
+.input-group { margin-bottom: 16px; }
+.input-group label { display: block; font-size: 0.9rem; margin-bottom: 6px; color: var(--text-muted); }
+.input-group input, .input-group select { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 1rem; transition: var(--transition); }
+.input-group input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(79,70,229,0.2); }
+.input-group small { color: var(--danger); font-size: 0.75rem; display: block; margin-top: 4px; visibility: hidden; }
+.input-group:has(:invalid):has(:not(:placeholder-shown)) small { visibility: visible; }
+.auth-options { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; margin-bottom: 20px; color: var(--text-muted); }
+.auth-footer { margin-top: 24px; text-align: center; font-size: 0.9rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 8px; }
+@media (max-width: 768px) { .auth-card { margin: 24px; padding: 24px; } }
